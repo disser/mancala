@@ -114,8 +114,8 @@ class GreedierStrategy(Strategy):
 
 class HumanStrategy(Strategy):
     def best_play(self, board):
-        again = False
-        while not again:
+        again = True
+        while again:
             logging.info("Current board: %s" % board)
             my_move = None
             while my_move is None:
@@ -129,6 +129,7 @@ class HumanStrategy(Strategy):
                 else:
                     break
             new_board, again = move(board, self.player, my_move)
+            print "again", again
             board = new_board
         return my_move, board
 
