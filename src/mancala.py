@@ -79,16 +79,20 @@ class Board:
         assert sum(self.score) + sum(self.pits[0]) + sum(self.pits[1]) == self.num_pits * self.stones_per_pit * 2, "Board %s failed sanity check" % str(self)
 
     def __str__(self):
-        ret = "  " + ''.join(map(lambda x:  " %-2d  " % x, range(self.num_pits))) + "\n"
+        ret = "  " + ''.join(map(lambda x:  " %-2d  " % x, reversed(range(self.num_pits)))) + "\n"
         for player in (1,0):
             if self.next_player == player:
                 marker = "*"
             else:
                 marker = " "
             ret += marker
-            for pit in range(self.num_pits):
+            pits = range(self.num_pits)
+            if player == 1:
+                pits = reversed(pits)
+            for pit in pits:
                 ret += "[%-2d] " % self.pits[player][pit]
             ret += "SCORE: %d\n" % self.score[player]
+        ret += "  " + ''.join(map(lambda x:  " %-2d  " % x, range(self.num_pits))) + "\n"
         return ret
  
     def valid_moves(self):
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     human_player = 0
     computer_player = human_player ^ 1
-    simulations = 10000
+    simulations = 100000
     board = Board()
     while not board.game_over:
         if board.next_player == human_player:
@@ -122,19 +126,24 @@ if __name__ == "__main__":
             board.move(your_move)
         else:
             print board
-            most_wins = -1
+            most_wins = None
             best_move = 0
+            most_points = None
             for potential_move in board.valid_moves():
                 wins = 0
+                pt_diff = 0
                 for sim in range(simulations):
                     attempt = deepcopy(board)
                     attempt.move(potential_move)
-                    random_game(attempt, num_moves=10)
+                    random_game(attempt, num_moves=1)
                     logging.debug("test game: %s" % attempt)
-                    if attempt.score[computer_player] > attempt.score[human_player]:
+                    pt_diff += attempt.score[computer_player] - attempt.score[human_player]
+                    if pt_diff > 0:
                         wins += 1
-                if wins > most_wins:
+                #if most_wins is None or wins > most_wins:
+                if most_points is None or pt_diff > most_points:
                     best_move = potential_move
                     most_wins = wins
-            print "Computer moves from position %s for win pct = %s%%" % (best_move, wins*100/simulations)
+            #print "Computer moves from position %s for win pct = %s%%" % (best_move, wins*100/simulations)
+            print "Computer moves from position %s." % best_move
             board.move(best_move)
