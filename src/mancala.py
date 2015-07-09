@@ -79,7 +79,17 @@ class Board:
         assert sum(self.score) + sum(self.pits[0]) + sum(self.pits[1]) == self.num_pits * self.stones_per_pit * 2, "Board %s failed sanity check" % str(self)
 
     def __str__(self):
-        return "P0: %s=%d P1: %s=%d NEXT: %d" % (self.pits[0], self.score[0], self.pits[1], self.score[1], self.next_player)
+        ret = "  " + ''.join(map(lambda x:  " %-2d  " % x, range(self.num_pits))) + "\n"
+        for player in (1,0):
+            if self.next_player == player:
+                marker = "*"
+            else:
+                marker = " "
+            ret += marker
+            for pit in range(self.num_pits):
+                ret += "[%-2d] " % self.pits[player][pit]
+            ret += "SCORE: %d\n" % self.score[player]
+        return ret
  
     def valid_moves(self):
         return filter(lambda x: self.pits[self.next_player][x] > 0, range(self.num_pits))
